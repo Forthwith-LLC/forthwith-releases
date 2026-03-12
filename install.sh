@@ -4,6 +4,7 @@ set -eu
 REPO="Forthwith-LLC/forthwith-releases"
 BINARY_NAME="forthwith"
 INSTALL_DIR="${FORTHWITH_INSTALL_DIR:-/usr/local/bin}"
+PKG_ID="com.forthwith.cli"
 
 main() {
     os="$(detect_os)"
@@ -20,27 +21,25 @@ main() {
         exit 1
     fi
 
-    archive="forthwith_${version#v}_${os}_${arch}.tar.gz"
-    url="https://github.com/${REPO}/releases/download/${version}/${archive}"
     checksums_url="https://github.com/${REPO}/releases/download/${version}/checksums.txt"
 
     tmpdir="$(mktemp -d)"
     trap 'rm -rf "$tmpdir"' EXIT
 
-    echo "Downloading ${BINARY_NAME} ${version} for ${os}/${arch}..."
-    curl -sSfL "$url" -o "$tmpdir/$archive"
     curl -sSfL "$checksums_url" -o "$tmpdir/checksums.txt"
 
-    echo "Verifying checksum..."
-    verify_checksum "$tmpdir" "$archive"
-
-    echo "Extracting..."
-    tar -xzf "$tmpdir/$archive" -C "$tmpdir"
-
-    echo "Installing to ${INSTALL_DIR}..."
-    install_binary "$tmpdir/$BINARY_NAME" "$INSTALL_DIR/$BINARY_NAME"
-
-    echo "Successfully installed ${BINARY_NAME} ${version} to ${INSTALL_DIR}/${BINARY_NAME}"
+    case "$os" in
+        darwin)
+            install_macos "$version" "$arch" "$tmpdir"
+            ;;
+        linux)
+            install_linux "$version" "$arch" "$tmpdir"
+            ;;
+        *)
+            echo "Error: unsupported platform: ${os}/${arch}" >&2
+            exit 1
+            ;;
+    esac
 }
 
 detect_os() {
@@ -63,6 +62,65 @@ get_latest_version() {
     curl -sSfL -H "Accept: application/json" \
         "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null |
         sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'
+}
+
+install_macos() {
+    version="$1"
+    arch="$2"
+    tmpdir="$3"
+    package="forthwith_${version#v}_darwin_${arch}.pkg"
+    url="https://github.com/${REPO}/releases/download/${version}/${package}"
+
+    if [ "$INSTALL_DIR" != "/usr/local/bin" ]; then
+        echo "Error: FORTHWITH_INSTALL_DIR is not supported on macOS package installs" >&2
+        exit 1
+    fi
+
+    echo "Downloading ${BINARY_NAME} ${version} for ${arch}..."
+    curl -sSfL "$url" -o "$tmpdir/$package"
+
+    echo "Verifying checksum..."
+    verify_checksum "$tmpdir" "$package"
+
+    if command -v spctl >/dev/null 2>&1; then
+        echo "Validating notarized package..."
+        spctl --assess --type install -vv "$tmpdir/$package"
+    fi
+
+    echo "Installing package to /usr/local/bin..."
+    if [ "$(id -u)" -eq 0 ]; then
+        installer -pkg "$tmpdir/$package" -target /
+    else
+        sudo installer -pkg "$tmpdir/$package" -target /
+    fi
+
+    if command -v pkgutil >/dev/null 2>&1; then
+        pkgutil --pkg-info "$PKG_ID" >/dev/null 2>&1 || true
+    fi
+
+    echo "Successfully installed ${BINARY_NAME} ${version} to /usr/local/bin/${BINARY_NAME}"
+}
+
+install_linux() {
+    version="$1"
+    arch="$2"
+    tmpdir="$3"
+    archive="forthwith_${version#v}_linux_${arch}.tar.gz"
+    url="https://github.com/${REPO}/releases/download/${version}/${archive}"
+
+    echo "Downloading ${BINARY_NAME} ${version} for linux/${arch}..."
+    curl -sSfL "$url" -o "$tmpdir/$archive"
+
+    echo "Verifying checksum..."
+    verify_checksum "$tmpdir" "$archive"
+
+    echo "Extracting..."
+    tar -xzf "$tmpdir/$archive" -C "$tmpdir"
+
+    echo "Installing to ${INSTALL_DIR}..."
+    install_binary "$tmpdir/$BINARY_NAME" "$INSTALL_DIR/$BINARY_NAME"
+
+    echo "Successfully installed ${BINARY_NAME} ${version} to ${INSTALL_DIR}/${BINARY_NAME}"
 }
 
 verify_checksum() {

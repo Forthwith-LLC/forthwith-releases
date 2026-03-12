@@ -16,11 +16,13 @@ You need a Forthwith account to use this CLI. [Sign up at forthwith.dev](https:/
 curl -fsSL https://raw.githubusercontent.com/Forthwith-LLC/forthwith-releases/main/install.sh | bash
 ```
 
+On macOS, this downloads and installs the notarized `.pkg` for your architecture. On Linux, it downloads the `.tar.gz` archive and installs the binary to `/usr/local/bin` by default.
+
 ### macOS (Homebrew)
 
 ```bash
 brew tap Forthwith-LLC/forthwith
-brew install forthwith
+brew install --cask forthwith
 ```
 
 ### Windows (Scoop)
@@ -37,16 +39,16 @@ choco install forthwith
 ```
 
 ### Manual Download
-Download the binary for your platform from the Releases page.
+Download the installer or archive for your platform from the Releases page.
 
 | Platform | Architecture   | File                              |
 |----------|----------------|-----------------------------------|
-| macOS    | Apple Silicon  | `forthwith_darwin_arm64.tar.gz`   |
-| macOS    | Intel          | `forthwith_darwin_amd64.tar.gz`   |
-| Linux    | x86_64         | `forthwith_linux_amd64.tar.gz`    |
-| Linux    | ARM64          | `forthwith_linux_arm64.tar.gz`    |
-| Windows  | x86_64         | `forthwith_windows_amd64.zip`     |
-| Windows  | ARM64          | `forthwith_windows_arm64.zip`     |
+| macOS    | Apple Silicon  | `forthwith_<version>_darwin_arm64.pkg` |
+| macOS    | Intel          | `forthwith_<version>_darwin_amd64.pkg` |
+| Linux    | x86_64         | `forthwith_<version>_linux_amd64.tar.gz` |
+| Linux    | ARM64          | `forthwith_<version>_linux_arm64.tar.gz` |
+| Windows  | x86_64         | `forthwith_<version>_windows_amd64.zip` |
+| Windows  | ARM64          | `forthwith_<version>_windows_arm64.zip` |
 
 ## Uninstallation
 ### macOS / Linux
@@ -69,7 +71,6 @@ forthwith translate
 ```
 
 See the [Forthwith CLI documentation](https://forthwith.dev/docs) for complete usage instructions.
-
 
 
 
