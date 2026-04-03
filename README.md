@@ -18,6 +18,12 @@ curl -fsSL https://raw.githubusercontent.com/Forthwith-LLC/forthwith-releases/ma
 
 On macOS, this downloads and installs the notarized `.pkg` for your architecture. On Linux, it downloads the `.tar.gz` archive and installs the binary to `/usr/local/bin` by default.
 
+To pin a specific release, set `FORTHWITH_VERSION`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Forthwith-LLC/forthwith-releases/main/install.sh | FORTHWITH_VERSION=v0.1.0-rc.7 bash
+```
+
 ### macOS (Homebrew)
 
 ```bash
@@ -71,7 +77,6 @@ forthwith translate
 ```
 
 See the [Forthwith CLI documentation](https://forthwith.dev/docs) for complete usage instructions.
-
 
 
 

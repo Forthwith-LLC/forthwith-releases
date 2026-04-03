@@ -4,6 +4,7 @@ set -eu
 REPO="Forthwith-LLC/forthwith-releases"
 BINARY_NAME="forthwith"
 INSTALL_DIR="${FORTHWITH_INSTALL_DIR:-/usr/local/bin}"
+FORTHWITH_VERSION="${FORTHWITH_VERSION:-}"
 PKG_ID="com.forthwith.cli"
 
 main() {
@@ -15,7 +16,9 @@ main() {
         exit 1
     fi
 
-    version="$(get_latest_version)"
+    if ! version="$(get_latest_version)"; then
+        version=""
+    fi
     if [ -z "$version" ]; then
         echo "Error: could not determine latest version" >&2
         exit 1
@@ -59,9 +62,42 @@ detect_arch() {
 }
 
 get_latest_version() {
-    curl -sSfL -H "Accept: application/json" \
-        "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null |
-        sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'
+    if [ -n "$FORTHWITH_VERSION" ]; then
+        printf '%s\n' "$FORTHWITH_VERSION"
+        return 0
+    fi
+
+    latest_release_url="https://api.github.com/repos/${REPO}/releases/latest"
+    releases_url="https://api.github.com/repos/${REPO}/releases?per_page=1"
+
+    response="$(github_api_get "$latest_release_url" 2>/dev/null || true)"
+    version="$(printf '%s\n' "$response" | extract_tag_name)"
+    if [ -n "$version" ]; then
+        printf '%s\n' "$version"
+        return 0
+    fi
+
+    response="$(github_api_get "$releases_url" 2>/dev/null || true)"
+    version="$(printf '%s\n' "$response" | extract_tag_name)"
+    if [ -n "$version" ]; then
+        printf '%s\n' "$version"
+        return 0
+    fi
+
+    return 1
+}
+
+github_api_get() {
+    curl -sSfL \
+        -H "Accept: application/vnd.github+json" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        -H "User-Agent: forthwith-install-script" \
+        "$1"
+}
+
+extract_tag_name() {
+    sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' |
+        sed -n '1p'
 }
 
 install_macos() {
