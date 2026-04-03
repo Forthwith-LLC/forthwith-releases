@@ -71,6 +71,12 @@ Download the installer or archive for your platform from the Releases page. Home
 curl -fsSL https://raw.githubusercontent.com/Forthwith-LLC/forthwith-releases/main/uninstall.sh | bash
 ```
 
+or if installed with homebrew on macOS:
+```bash
+brew uninstall forthwith
+brew untap Forthwith-LLC/forthwith
+```
+
 ## Getting Started
 
 ```bash
