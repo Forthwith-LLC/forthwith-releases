@@ -27,8 +27,14 @@ curl -fsSL https://raw.githubusercontent.com/Forthwith-LLC/forthwith-releases/ma
 ### macOS (Homebrew)
 
 ```bash
+brew install Forthwith-LLC/forthwith/forthwith
+```
+
+If you prefer to add the tap first, you can also run:
+
+```bash
 brew tap Forthwith-LLC/forthwith
-brew install --cask forthwith
+brew install forthwith
 ```
 
 ### Windows (Scoop)
@@ -45,12 +51,14 @@ choco install forthwith
 ```
 
 ### Manual Download
-Download the installer or archive for your platform from the Releases page.
+Download the installer or archive for your platform from the Releases page. Homebrew uses the macOS `.tar.gz` archives; direct macOS installs should use the notarized `.pkg`.
 
-| Platform | Architecture   | File                              |
-|----------|----------------|-----------------------------------|
+| Platform | Architecture   | File |
+|----------|----------------|------|
 | macOS    | Apple Silicon  | `forthwith_<version>_darwin_arm64.pkg` |
+| macOS    | Apple Silicon  | `forthwith_<version>_darwin_arm64.tar.gz` |
 | macOS    | Intel          | `forthwith_<version>_darwin_amd64.pkg` |
+| macOS    | Intel          | `forthwith_<version>_darwin_amd64.tar.gz` |
 | Linux    | x86_64         | `forthwith_<version>_linux_amd64.tar.gz` |
 | Linux    | ARM64          | `forthwith_<version>_linux_arm64.tar.gz` |
 | Windows  | x86_64         | `forthwith_<version>_windows_amd64.zip` |
@@ -77,6 +85,4 @@ forthwith translate
 ```
 
 See the [Forthwith CLI documentation](https://forthwith.dev/docs) for complete usage instructions.
-
-
 
