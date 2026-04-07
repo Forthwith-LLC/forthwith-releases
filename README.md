@@ -64,6 +64,51 @@ Download the installer or archive for your platform from the Releases page. Home
 | Windows  | x86_64         | `forthwith_<version>_windows_amd64.zip` |
 | Windows  | ARM64          | `forthwith_<version>_windows_arm64.zip` |
 
+## Updating
+
+Update Forthwith using the same method you used to install it:
+
+### macOS / Linux (install script)
+
+Run the installer again to upgrade to the latest release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Forthwith-LLC/forthwith-releases/main/install.sh | bash
+```
+
+To update to a specific release, set `FORTHWITH_VERSION`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Forthwith-LLC/forthwith-releases/main/install.sh | FORTHWITH_VERSION=v0.1.0-rc.7 bash
+```
+
+### macOS (Homebrew)
+
+```bash
+brew update
+brew upgrade forthwith
+```
+
+### Windows (Scoop)
+
+```bash
+scoop update forthwith
+```
+
+### Windows (Chocolatey)
+
+```bash
+choco upgrade forthwith
+```
+
+### Manual Download
+
+Download the latest release for your platform from the Releases page, then reinstall it the same way:
+
+- On macOS, run the newer `.pkg`.
+- On Linux, replace the existing `forthwith` binary with the one from the newer `.tar.gz`.
+- On Windows, replace the existing `forthwith.exe` with the one from the newer `.zip`.
+
 ## Uninstallation
 ### macOS / Linux
 
