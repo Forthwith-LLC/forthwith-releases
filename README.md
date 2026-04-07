@@ -71,10 +71,28 @@ Download the installer or archive for your platform from the Releases page. Home
 curl -fsSL https://raw.githubusercontent.com/Forthwith-LLC/forthwith-releases/main/uninstall.sh | bash
 ```
 
+For non-interactive environments, you can skip the confirmation prompt:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Forthwith-LLC/forthwith-releases/main/uninstall.sh | FORTHWITH_UNINSTALL_YES=1 bash
+```
+
 or if installed with homebrew on macOS:
 ```bash
 brew uninstall forthwith
 brew untap Forthwith-LLC/forthwith
+```
+
+### Windows
+
+If installed with Chocolatey:
+```bash
+choco uninstall forthwith
+```
+
+If installed with Scoop:
+```bash
+scoop uninstall forthwith
 ```
 
 ## Getting Started
@@ -91,4 +109,3 @@ forthwith translate
 ```
 
 See the [Forthwith CLI documentation](https://forthwith.dev/docs) for complete usage instructions.
-

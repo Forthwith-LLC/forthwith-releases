@@ -5,6 +5,7 @@ BINARY_NAME="forthwith"
 INSTALL_DIR="${FORTHWITH_INSTALL_DIR:-/usr/local/bin}"
 BINARY_PATH="${INSTALL_DIR}/${BINARY_NAME}"
 PKG_ID="com.forthwith.cli"
+ASSUME_YES="${FORTHWITH_UNINSTALL_YES:-}"
 
 main() {
     if [ ! -f "$BINARY_PATH" ]; then
@@ -15,10 +16,12 @@ main() {
         exit 0
     fi
 
-    printf "Remove %s from %s? [y/N] " "$BINARY_NAME" "$INSTALL_DIR"
-    if ! read -r answer; then
-        answer=""
+    if [ "$ASSUME_YES" = "1" ]; then
+        answer="yes"
+    else
+        answer="$(prompt_for_confirmation "Remove ${BINARY_NAME} from ${INSTALL_DIR}? [y/N] ")" || exit 1
     fi
+
     case "$answer" in
         [Yy]|[Yy][Ee][Ss])
             remove_binary
@@ -41,6 +44,38 @@ remove_binary() {
     if is_macos && command -v pkgutil >/dev/null 2>&1; then
         forget_receipt
     fi
+}
+
+prompt_for_confirmation() {
+    prompt="$1"
+
+    if [ -t 2 ]; then
+        printf "%s" "$prompt" >&2
+        if answer="$(
+            sh -c '
+                if IFS= read -r answer < /dev/tty; then
+                    printf "%s\n" "$answer"
+                else
+                    exit 1
+                fi
+            ' 2>/dev/null
+        )"; then
+            printf '%s\n' "$answer"
+            return 0
+        fi
+    fi
+
+    if [ -t 0 ]; then
+        printf "%s" "$prompt"
+        if read -r answer; then
+            printf '%s\n' "$answer"
+            return 0
+        fi
+    fi
+
+    echo "Error: could not read confirmation from the terminal." >&2
+    echo "Re-run interactively, or set FORTHWITH_UNINSTALL_YES=1 to skip the prompt." >&2
+    return 1
 }
 
 forget_receipt() {
