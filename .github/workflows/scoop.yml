@@ -1,0 +1,119 @@
+name: Update Scoop Manifest
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version (with or without leading v)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scoop-bucket
+  cancel-in-progress: false
+
+jobs:
+  scoop:
+    name: Update scoop-forthwith
+    if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$EVENT_NAME" = "release" ]; then
+            RAW="$RELEASE_TAG"
+          else
+            RAW="$INPUT_VERSION"
+          fi
+          if [ -z "$RAW" ]; then
+            echo "Could not resolve a release version." >&2
+            exit 1
+          fi
+          VERSION="${RAW#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release download "$TAG" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --pattern "checksums.txt" \
+            --dir .
+
+      - name: Generate manifest
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          AMD64_HASH=$(awk -v f="forthwith_${VERSION}_windows_amd64.zip" '$2 == f || $2 == "*" f { print $1; exit }' checksums.txt)
+          ARM64_HASH=$(awk -v f="forthwith_${VERSION}_windows_arm64.zip" '$2 == f || $2 == "*" f { print $1; exit }' checksums.txt)
+          if [ -z "$AMD64_HASH" ] || [ -z "$ARM64_HASH" ]; then
+            echo "Missing Windows checksum entries for ${VERSION}." >&2
+            cat checksums.txt >&2
+            exit 1
+          fi
+          mkdir -p out
+          cat > out/forthwith.json <<EOF
+          {
+            "version": "${VERSION}",
+            "description": "Forthwith CLI - manage your Forthwith resources from the command line",
+            "homepage": "https://github.com/${REPO}",
+            "license": "MIT",
+            "architecture": {
+              "64bit": {
+                "url": "https://github.com/${REPO}/releases/download/v${VERSION}/forthwith_${VERSION}_windows_amd64.zip",
+                "hash": "${AMD64_HASH}"
+              },
+              "arm64": {
+                "url": "https://github.com/${REPO}/releases/download/v${VERSION}/forthwith_${VERSION}_windows_arm64.zip",
+                "hash": "${ARM64_HASH}"
+              }
+            },
+            "bin": "forthwith.exe"
+          }
+          EOF
+
+      - name: Checkout scoop-forthwith
+        uses: actions/checkout@v5
+        with:
+          repository: Forthwith-LLC/scoop-forthwith
+          token: ${{ secrets.SCOOP_PUSH_TOKEN }}
+          path: scoop-forthwith
+
+      - name: Commit and push manifest
+        working-directory: scoop-forthwith
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p bucket
+          if [ -f bucket/forthwith.json ]; then
+            CURRENT_VERSION="$(jq -r '.version // empty' bucket/forthwith.json 2>/dev/null || true)"
+            NEWEST_VERSION="$(printf '%s\n%s\n' "$CURRENT_VERSION" "$VERSION" | sort -V | tail -n 1)"
+            if [ -n "$CURRENT_VERSION" ] && [ "$NEWEST_VERSION" = "$CURRENT_VERSION" ] && [ "$CURRENT_VERSION" != "$VERSION" ]; then
+              echo "Bucket already has newer manifest version ${CURRENT_VERSION}; skipping ${VERSION}."
+              exit 0
+            fi
+          fi
+          cp ../out/forthwith.json bucket/forthwith.json
+          git add bucket/forthwith.json
+          if git diff --cached --quiet -- bucket/forthwith.json; then
+            echo "Manifest already up to date for ${VERSION}; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "forthwith ${VERSION}"
+          git push
