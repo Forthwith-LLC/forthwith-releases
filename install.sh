@@ -195,12 +195,10 @@ install_binary() {
         mkdir -p "$dest_dir" 2>/dev/null || sudo mkdir -p "$dest_dir"
     fi
 
-    chmod +x "$src"
-
     if [ -w "$dest_dir" ]; then
-        cp "$src" "$dest"
+        install -m 0755 "$src" "$dest"
     else
-        sudo cp "$src" "$dest"
+        sudo install -m 0755 "$src" "$dest"
     fi
 }
 
