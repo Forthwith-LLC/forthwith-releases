@@ -44,12 +44,6 @@ scoop bucket add forthwith https://github.com/Forthwith-LLC/scoop-forthwith
 scoop install forthwith
 ```
 
-### Windows (Chocolatey)
-
-```bash
-choco install forthwith
-```
-
 ### Manual Download
 Download the installer or archive for your platform from the Releases page. Homebrew uses the macOS `.tar.gz` archives; direct macOS installs should use the notarized `.pkg`.
 
@@ -95,12 +89,6 @@ brew upgrade forthwith
 scoop update forthwith
 ```
 
-### Windows (Chocolatey)
-
-```bash
-choco upgrade forthwith
-```
-
 ### Manual Download
 
 Download the latest release for your platform from the Releases page, then reinstall it the same way:
@@ -129,11 +117,6 @@ brew untap Forthwith-LLC/forthwith
 ```
 
 ### Windows
-
-If installed with Chocolatey:
-```bash
-choco uninstall forthwith
-```
 
 If installed with Scoop:
 ```bash
