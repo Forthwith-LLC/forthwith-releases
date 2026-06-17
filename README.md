@@ -44,6 +44,14 @@ scoop bucket add forthwith https://github.com/Forthwith-LLC/scoop-forthwith
 scoop install forthwith
 ```
 
+### Windows Package Manager
+
+Available after the package is approved in the Windows Package Manager community repository:
+
+```powershell
+winget install --id ForthwithLLC.ForthwithCLI
+```
+
 ### Manual Download
 Download the installer or archive for your platform from the Releases page. Homebrew uses the macOS `.tar.gz` archives; direct macOS installs should use the notarized `.pkg`.
 
@@ -89,6 +97,14 @@ brew upgrade forthwith
 scoop update forthwith
 ```
 
+### Windows Package Manager
+
+Available after the package is approved in the Windows Package Manager community repository:
+
+```powershell
+winget upgrade --id ForthwithLLC.ForthwithCLI
+```
+
 ### Manual Download
 
 Download the latest release for your platform from the Releases page, then reinstall it the same way:
@@ -117,6 +133,12 @@ brew untap Forthwith-LLC/forthwith
 ```
 
 ### Windows
+
+If installed with Windows Package Manager after package approval:
+
+```powershell
+winget uninstall --id ForthwithLLC.ForthwithCLI
+```
 
 If installed with Scoop:
 ```bash
